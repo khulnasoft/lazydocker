@@ -24,12 +24,12 @@ jobs:
           version: v1.17.2
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{secrets.GORELEASER_TOKEN}}
+          GITHUB_TOKEN: ${{secrets.ORG_API_KEY}}
   homebrew:
     runs-on: ubuntu-latest
     steps:
       - name: Bump Homebrew formula
         uses: dawidd6/action-homebrew-bump-formula@v3
         with:
-          token: ${{secrets.HOMEBREW_TOKEN}}
+          token: ${{secrets.ORG_API_KEY}}
           formula: lazydocker
