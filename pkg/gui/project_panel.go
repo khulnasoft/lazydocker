@@ -102,7 +102,7 @@ func (gui *Gui) creditsStr() string {
 	return strings.Join(
 		[]string{
 			lazydockerTitle(),
-			"Copyright (c) 2019 Jesse Duffield",
+			"Copyright (c) 2019 KhulnaSoft DevOps",
 			"Keybindings: https://github.com/khulnasoft/lazydocker/blob/master/docs/keybindings",
 			"Config Options: https://github.com/khulnasoft/lazydocker/blob/master/docs/Config.md",
 			"Raise an Issue: https://github.com/khulnasoft/lazydocker/issues",

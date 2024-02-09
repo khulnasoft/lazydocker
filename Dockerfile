@@ -1,8 +1,8 @@
 ARG BASE_IMAGE_BUILDER=golang
-ARG ALPINE_VERSION=3.15
+ARG ALPINE_VERSION=3.19
 ARG GO_VERSION=1.20
 
-FROM ${BASE_IMAGE_BUILDER}:${GO_VERSION}-alpine${ALPINE_VERSION} AS builder
+FROM ${BASE_IMAGE_BUILDER}:alpine${ALPINE_VERSION} AS builder
 ARG GOARCH=amd64
 ARG GOARM
 ARG VERSION
@@ -35,7 +35,7 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 LABEL \
-    org.opencontainers.image.authors="jessedduffield@gmail.com" \
+    org.opencontainers.image.authors="info@khulnasoft.com" \
     org.opencontainers.image.created=$BUILD_DATE \
     org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.revision=$VCS_REF \

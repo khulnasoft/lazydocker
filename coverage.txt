@@ -336,10 +336,10 @@ github.com/khulnasoft/lazydocker/pkg/config/app_config.go:543.16,545.3 1 0
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:547.2,547.20 1 4
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:550.72,554.2 2 4
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:556.78,559.45 2 6
-github.com/khulnasoft/lazydocker/pkg/config/app_config.go:559.45,560.25 1 0
-github.com/khulnasoft/lazydocker/pkg/config/app_config.go:560.25,562.18 2 0
+github.com/khulnasoft/lazydocker/pkg/config/app_config.go:559.45,560.25 1 1
+github.com/khulnasoft/lazydocker/pkg/config/app_config.go:560.25,562.18 2 1
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:562.18,564.5 1 0
-github.com/khulnasoft/lazydocker/pkg/config/app_config.go:565.4,565.16 1 0
+github.com/khulnasoft/lazydocker/pkg/config/app_config.go:565.4,565.16 1 1
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:566.9,568.4 1 0
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:571.2,572.16 2 6
 github.com/khulnasoft/lazydocker/pkg/config/app_config.go:572.16,574.3 1 0

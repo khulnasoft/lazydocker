@@ -21,7 +21,7 @@
 
 A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
-![CI](https://github.com/jesseduffield/lazygit/workflows/Continuous%20Integration/badge.svg)
+![CI](https://github.com/khulnasoft/lazygit/workflows/Continuous%20Integration/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/khulnasoft/lazydocker)](https://goreportcard.com/report/github.com/khulnasoft/lazydocker)
 [![GolangCI](https://golangci.com/badges/github.com/khulnasoft/lazydocker.svg)](https://golangci.com)
 [![GoDoc](https://godoc.org/github.com/khulnasoft/lazydocker?status.svg)](http://godoc.org/github.com/khulnasoft/lazydocker)
@@ -32,16 +32,10 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 
 ![Gif](/docs/resources/demo3.gif)
 
-[Demo](https://youtu.be/NICqQPxwJWw)
-
 ## Sponsors
 
 <p align="center">
- Maintenance of this project is made possible by all the <a href="https://github.com/khulnasoft/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
-</p>
-
-<p align="center">
-<!-- sponsors --><a href="https://github.com/intabulas"><img src="https://github.com/intabulas.png" width="60px" alt="" /></a><a href="https://github.com/peppy"><img src="https://github.com/peppy.png" width="60px" alt="" /></a><a href="https://github.com/piot"><img src="https://github.com/piot.png" width="60px" alt="" /></a><a href="https://github.com/rgwood"><img src="https://github.com/rgwood.png" width="60px" alt="" /></a><a href="https://github.com/oliverguenther"><img src="https://github.com/oliverguenther.png" width="60px" alt="" /></a><a href="https://github.com/pawanjay176"><img src="https://github.com/pawanjay176.png" width="60px" alt="" /></a><a href="https://github.com/bdach"><img src="https://github.com/bdach.png" width="60px" alt="" /></a><a href="https://github.com/davidklsn"><img src="https://github.com/davidklsn.png" width="60px" alt="" /></a><a href="https://github.com/jryom"><img src="https://github.com/jryom.png" width="60px" alt="" /></a><a href="https://github.com/carstengehling"><img src="https://github.com/carstengehling.png" width="60px" alt="" /></a><a href="https://github.com/ceuk"><img src="https://github.com/ceuk.png" width="60px" alt="" /></a><a href="https://github.com/akospwc"><img src="https://github.com/akospwc.png" width="60px" alt="" /></a><a href="https://github.com/Xetera"><img src="https://github.com/Xetera.png" width="60px" alt="" /></a><a href="https://github.com/HoldenLucas"><img src="https://github.com/HoldenLucas.png" width="60px" alt="" /></a><a href="https://github.com/barbados-clemens"><img src="https://github.com/barbados-clemens.png" width="60px" alt="" /></a><a href="https://github.com/nartc"><img src="https://github.com/nartc.png" width="60px" alt="" /></a><a href="https://github.com/matejcik"><img src="https://github.com/matejcik.png" width="60px" alt="" /></a><a href="https://github.com/lucatume"><img src="https://github.com/lucatume.png" width="60px" alt="" /></a><a href="https://github.com/zach-fuller"><img src="https://github.com/zach-fuller.png" width="60px" alt="" /></a><a href="https://github.com/IvanZuy"><img src="https://github.com/IvanZuy.png" width="60px" alt="" /></a><a href="https://github.com/nicholascloud"><img src="https://github.com/nicholascloud.png" width="60px" alt="" /></a><a href="https://github.com/PhotonQuantum"><img src="https://github.com/PhotonQuantum.png" width="60px" alt="" /></a><a href="https://github.com/ava1ar"><img src="https://github.com/ava1ar.png" width="60px" alt="" /></a><a href="https://github.com/pedropombeiro"><img src="https://github.com/pedropombeiro.png" width="60px" alt="" /></a><a href="https://github.com/minidfx"><img src="https://github.com/minidfx.png" width="60px" alt="" /></a><a href="https://github.com/JoeKlemmer"><img src="https://github.com/JoeKlemmer.png" width="60px" alt="" /></a><a href="https://github.com/ColonelBucket8"><img src="https://github.com/ColonelBucket8.png" width="60px" alt="" /></a><a href="https://github.com/ComplexPlane"><img src="https://github.com/ComplexPlane.png" width="60px" alt="" /></a><a href="https://github.com/tobi"><img src="https://github.com/tobi.png" width="60px" alt="" /></a><a href="https://github.com/benbfortis"><img src="https://github.com/benbfortis.png" width="60px" alt="" /></a><a href="https://github.com/jakewarren"><img src="https://github.com/jakewarren.png" width="60px" alt="" /></a><a href="https://github.com/tgpholly"><img src="https://github.com/tgpholly.png" width="60px" alt="" /></a><a href="https://github.com/jisantuc"><img src="https://github.com/jisantuc.png" width="60px" alt="" /></a><a href="https://github.com/bitprophet"><img src="https://github.com/bitprophet.png" width="60px" alt="" /></a><a href="https://github.com/tayleighr"><img src="https://github.com/tayleighr.png" width="60px" alt="" /></a><a href="https://github.com/Novakov"><img src="https://github.com/Novakov.png" width="60px" alt="" /></a><a href="https://github.com/mthuggett"><img src="https://github.com/mthuggett.png" width="60px" alt="" /></a><a href="https://github.com/farzadmf"><img src="https://github.com/farzadmf.png" width="60px" alt="" /></a><a href="https://github.com/nekhaevskiy"><img src="https://github.com/nekhaevskiy.png" width="60px" alt="" /></a><a href="https://github.com/reivilibre"><img src="https://github.com/reivilibre.png" width="60px" alt="" /></a><a href="https://github.com/andreaskurth"><img src="https://github.com/andreaskurth.png" width="60px" alt="" /></a><a href="https://github.com/BSteffaniak"><img src="https://github.com/BSteffaniak.png" width="60px" alt="" /></a><a href="https://github.com/jordan-gillard"><img src="https://github.com/jordan-gillard.png" width="60px" alt="" /></a><a href="https://github.com/smangels"><img src="https://github.com/smangels.png" width="60px" alt="" /></a><a href="https://github.com/George-Spanos"><img src="https://github.com/George-Spanos.png" width="60px" alt="" /></a><a href="https://github.com/BenGH28"><img src="https://github.com/BenGH28.png" width="60px" alt="" /></a><a href="https://github.com/abradner"><img src="https://github.com/abradner.png" width="60px" alt="" /></a><a href="https://github.com/frantisekstanko"><img src="https://github.com/frantisekstanko.png" width="60px" alt="" /></a><a href="https://github.com/robclancy"><img src="https://github.com/robclancy.png" width="60px" alt="" /></a><a href="https://github.com/amslezak"><img src="https://github.com/amslezak.png" width="60px" alt="" /></a><a href="https://github.com/mkock"><img src="https://github.com/mkock.png" width="60px" alt="" /></a><a href="https://github.com/screendriver"><img src="https://github.com/screendriver.png" width="60px" alt="" /></a><a href="https://github.com/MichalKolasinski"><img src="https://github.com/MichalKolasinski.png" width="60px" alt="" /></a><a href="https://github.com/illarionvk"><img src="https://github.com/illarionvk.png" width="60px" alt="" /></a><a href="https://github.com/leandronowras"><img src="https://github.com/leandronowras.png" width="60px" alt="" /></a><a href="https://github.com/Bebolicious"><img src="https://github.com/Bebolicious.png" width="60px" alt="" /></a><a href="https://github.com/WhiteBlackGoose"><img src="https://github.com/WhiteBlackGoose.png" width="60px" alt="" /></a><a href="https://github.com/jessealama"><img src="https://github.com/jessealama.png" width="60px" alt="" /></a><a href="https://github.com/td0m"><img src="https://github.com/td0m.png" width="60px" alt="" /></a><a href="https://github.com/zoroqi"><img src="https://github.com/zoroqi.png" width="60px" alt="" /></a><a href="https://github.com/danielkokott"><img src="https://github.com/danielkokott.png" width="60px" alt="" /></a><a href="https://github.com/Nightsquid7"><img src="https://github.com/Nightsquid7.png" width="60px" alt="" /></a><a href="https://github.com/"><img src="https://github.com/.png" width="60px" alt="" /></a><a href="https://github.com/RayJameson"><img src="https://github.com/RayJameson.png" width="60px" alt="" /></a><!-- sponsors -->
+ Maintenance of this project is made possible by all the <a href="https://github.com/khulnasoft/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/khulnasoft">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/khulnasoft">click here</a>. 💙
 </p>
 
 ## Elevator Pitch
@@ -60,7 +54,6 @@ Memorising docker commands is hard. Memorising aliases is slightly less hard. Ke
 - [Contributing](https://github.com/khulnasoft/lazydocker#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
-- [Twitch Stream](https://www.twitch.tv/jesseduffield)
 - [FAQ](https://github.com/khulnasoft/lazydocker#faq)
 
 ## Requirements
@@ -168,7 +161,7 @@ yay -S lazydocker
 
         ```sh
         docker build -t khulnasoft/lazydocker \
-        --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
+        --build-arg BASE_IMAGE_BUILDER=alpine:3.14 \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
         https://github.com/khulnasoft/lazydocker.git
@@ -257,13 +250,13 @@ For contributor discussion about things not better discussed here in the repo, j
 
 ## Donate
 
-If you would like to support the development of lazydocker, consider [sponsoring me](https://github.com/sponsors/jesseduffield) (github is matching all donations dollar-for-dollar for 12 months)
+If you would like to support the development of lazydocker, consider [sponsoring me](https://github.com/sponsors/khulnasoft) (github is matching all donations dollar-for-dollar for 12 months)
 
 ## Social
 
 If you want to see what I (Jesse) am up to in terms of development, follow me on
 [twitter](https://twitter.com/DuffieldJesse) or watch me program on
-[twitch](https://www.twitch.tv/jesseduffield)
+[twitch](https://www.twitch.tv/khulnasoft)
 
 ## FAQ
 

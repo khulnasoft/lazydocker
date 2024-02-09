@@ -33,10 +33,10 @@ This means there is a little overhead in working with the code base. If you need
 
 a) Set `export GOFLAGS=-mod=vendor` in your ~/.bashrc file
 b) use `go run main.go` to run lazydocker
-c) if you need to bump a dependency e.g. jesseduffield/gocui, use
+c) if you need to bump a dependency e.g. khulnasoft/gocui, use
 
 ```
-GOFLAGS= go get -u github.com/jesseduffield/gocui@master
+GOFLAGS= go get -u github.com/khulnasoft/gocui@master
 go mod tidy
 go mod vendor
 ```
@@ -45,10 +45,10 @@ go mod vendor
 
 a) don't worry about your ~/.bashrc file
 b) use `go run -mod=vendor main.go` to run lazydocker
-c) if you need to bump a dependency e.g. jesseduffield/gocui, use
+c) if you need to bump a dependency e.g. khulnasoft/gocui, use
 
 ```
-go get -u github.com/jesseduffield/gocui@master
+go get -u github.com/khulnasoft/gocui@master
 go mod tidy
 go mod vendor
 ```
