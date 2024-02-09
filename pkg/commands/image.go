@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 

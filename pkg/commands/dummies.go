@@ -3,8 +3,8 @@ package commands
 import (
 	"io"
 
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
+	"github.com/khulnasoft/lazydocker/pkg/config"
+	"github.com/khulnasoft/lazydocker/pkg/i18n"
 	"github.com/sirupsen/logrus"
 )
 

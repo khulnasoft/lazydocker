@@ -8,7 +8,7 @@ Changes to the user config will only take place after closing and re-opening laz
 
 ### Locations:
 
-- OSX: `~/Library/Application Support/jesseduffield/lazydocker/config.yml`
+- OSX: `~/Library/Application Support/khulnasoft/lazydocker/config.yml`
 - Linux: `~/.config/lazydocker/config.yml`
 - Windows: `C:\\Users\\<User>\\AppData\\Roaming\\jesseduffield\\lazydocker\\config.yml` (I think)
 
@@ -94,7 +94,7 @@ stats:
       color: green
 ```
 
-## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/jesseduffield/lazydocker/pkg/config)
+## To see what all of the config options mean, and what other options you can set, see [here](https://godoc.org/github.com/khulnasoft/lazydocker/pkg/config)
 
 ## Color Attributes:
 
@@ -129,8 +129,8 @@ customCommands:
 
 You may use the following go templates (such as `{{ .Container.ID }}` above) in your commands:
 - `{{ .DockerCompose }}`: the docker compose command (default: `docker-compose`)
-- [`{{ .Container }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
-- [`{{ .Service }}`](https://pkg.go.dev/github.com/jesseduffield/lazydocker@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
+- [`{{ .Container }}`](https://pkg.go.dev/github.com/khulnasoft/lazydocker@v0.20.0/pkg/commands#Container) and its fields. For example: `{{ .Container.Container.ImageID }}`
+- [`{{ .Service }}`](https://pkg.go.dev/github.com/khulnasoft/lazydocker@v0.20.0/pkg/commands#Service) and its fields. For example: `{{ .Service.Name }}`
 
 ## Replacements
 

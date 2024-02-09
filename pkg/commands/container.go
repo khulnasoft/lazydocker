@@ -13,8 +13,8 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
-	"github.com/jesseduffield/lazydocker/pkg/i18n"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/i18n"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )

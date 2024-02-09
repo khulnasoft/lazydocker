@@ -22,12 +22,12 @@
 A simple terminal UI for both docker and docker-compose, written in Go with the [gocui](https://github.com/jroimartin/gocui 'gocui') library.
 
 ![CI](https://github.com/jesseduffield/lazygit/workflows/Continuous%20Integration/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jesseduffield/lazydocker)](https://goreportcard.com/report/github.com/jesseduffield/lazydocker)
-[![GolangCI](https://golangci.com/badges/github.com/jesseduffield/lazydocker.svg)](https://golangci.com)
-[![GoDoc](https://godoc.org/github.com/jesseduffield/lazydocker?status.svg)](http://godoc.org/github.com/jesseduffield/lazydocker)
-![GitHub repo size](https://img.shields.io/github/repo-size/jesseduffield/lazydocker)
-[![GitHub Releases](https://img.shields.io/github/downloads/jesseduffield/lazydocker/total)](https://github.com/jesseduffield/lazydocker/releases)
-[![GitHub tag](https://img.shields.io/github/tag/jesseduffield/lazydocker.svg)](https://github.com/jesseduffield/lazydocker/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/khulnasoft/lazydocker)](https://goreportcard.com/report/github.com/khulnasoft/lazydocker)
+[![GolangCI](https://golangci.com/badges/github.com/khulnasoft/lazydocker.svg)](https://golangci.com)
+[![GoDoc](https://godoc.org/github.com/khulnasoft/lazydocker?status.svg)](http://godoc.org/github.com/khulnasoft/lazydocker)
+![GitHub repo size](https://img.shields.io/github/repo-size/khulnasoft/lazydocker)
+[![GitHub Releases](https://img.shields.io/github/downloads/khulnasoft/lazydocker/total)](https://github.com/khulnasoft/lazydocker/releases)
+[![GitHub tag](https://img.shields.io/github/tag/khulnasoft/lazydocker.svg)](https://github.com/khulnasoft/lazydocker/releases/latest)
 [![homebrew](https://img.shields.io/homebrew/v/lazydocker)](https://github.com/Homebrew/homebrew-core/blob/master/Formula/lazydocker.rb)
 
 ![Gif](/docs/resources/demo3.gif)
@@ -37,7 +37,7 @@ A simple terminal UI for both docker and docker-compose, written in Go with the 
 ## Sponsors
 
 <p align="center">
- Maintenance of this project is made possible by all the <a href="https://github.com/jesseduffield/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
+ Maintenance of this project is made possible by all the <a href="https://github.com/khulnasoft/lazydocker/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/jesseduffield">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/jesseduffield">click here</a>. 💙
 </p>
 
 <p align="center">
@@ -52,16 +52,16 @@ What a headache!
 
 Memorising docker commands is hard. Memorising aliases is slightly less hard. Keeping track of your containers across multiple terminal windows is near impossible. What if you had all the information you needed in one terminal window with every common command living one keypress away (and the ability to add custom commands as well). Lazydocker's goal is to make that dream a reality.
 
-- [Requirements](https://github.com/jesseduffield/lazydocker#requirements)
-- [Installation](https://github.com/jesseduffield/lazydocker#installation)
-- [Usage](https://github.com/jesseduffield/lazydocker#usage)
+- [Requirements](https://github.com/khulnasoft/lazydocker#requirements)
+- [Installation](https://github.com/khulnasoft/lazydocker#installation)
+- [Usage](https://github.com/khulnasoft/lazydocker#usage)
 - [Keybindings](/docs/keybindings)
-- [Cool Features](https://github.com/jesseduffield/lazydocker#cool-features)
-- [Contributing](https://github.com/jesseduffield/lazydocker#contributing)
+- [Cool Features](https://github.com/khulnasoft/lazydocker#cool-features)
+- [Contributing](https://github.com/khulnasoft/lazydocker#contributing)
 - [Video Tutorial](https://youtu.be/NICqQPxwJWw)
 - [Config Docs](/docs/Config.md)
 - [Twitch Stream](https://www.twitch.tv/jesseduffield)
-- [FAQ](https://github.com/jesseduffield/lazydocker#faq)
+- [FAQ](https://github.com/khulnasoft/lazydocker#faq)
 
 ## Requirements
 
@@ -76,7 +76,7 @@ Normally `lazydocker` formula can be found in the Homebrew core but we suggest y
 
 **Tap**:
 ```sh
-brew install jesseduffield/lazydocker/lazydocker
+brew install khulnasoft/lazydocker/lazydocker
 ```
 
 **Core**:
@@ -115,12 +115,12 @@ asdf global lazydocker latest
 
 ### Binary Release (Linux/OSX/Windows)
 
-You can manually download a binary release from [the release page](https://github.com/jesseduffield/lazydocker/releases).
+You can manually download a binary release from [the release page](https://github.com/khulnasoft/lazydocker/releases).
 
 Automated install/update, don't forget to always verify what you're piping into bash:
 
 ```sh
-curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+curl https://raw.githubusercontent.com/khulnasoft/lazydocker/master/scripts/install_update_linux.sh | bash
 ```
 The script installs downloaded binary to `$HOME/.local/bin` directory by default, but it can be changed by setting `DIR` environment variable.
 
@@ -129,13 +129,13 @@ The script installs downloaded binary to `$HOME/.local/bin` directory by default
 Required Go Version >= **1.16**
 
 ```sh
-go install github.com/jesseduffield/lazydocker@latest
+go install github.com/khulnasoft/lazydocker@latest
 ```
 
 Required Go version >= **1.8**, <= **1.17**
 
 ```sh
-go get github.com/jesseduffield/lazydocker
+go get github.com/khulnasoft/lazydocker
 ```
 
 ### Arch Linux AUR
@@ -148,39 +148,39 @@ yay -S lazydocker
 
 ### Docker
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
-[![Docker Stars](https://img.shields.io/docker/stars/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
-[![Docker Automated](https://img.shields.io/docker/cloud/automated/lazyteam/lazydocker.svg)](https://hub.docker.com/r/lazyteam/lazydocker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/khulnasoft/lazydocker.svg)](https://hub.docker.com/r/khulnasoft/lazydocker)
+[![Docker Stars](https://img.shields.io/docker/stars/khulnasoft/lazydocker.svg)](https://hub.docker.com/r/khulnasoft/lazydocker)
+[![Docker Automated](https://img.shields.io/docker/cloud/automated/khulnasoft/lazydocker.svg)](https://hub.docker.com/r/khulnasoft/lazydocker)
 
 1. <details><summary>Click if you have an ARM device</summary><p>
 
     - If you have a ARM 32 bit v6 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t khulnasoft/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v6/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=6 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/khulnasoft/lazydocker.git
         ```
 
     - If you have a ARM 32 bit v7 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t khulnasoft/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm32v7/golang \
         --build-arg GOARCH=arm \
         --build-arg GOARM=7 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/khulnasoft/lazydocker.git
         ```
 
     - If you have a ARM 64 bit v8 architecture
 
         ```sh
-        docker build -t lazyteam/lazydocker \
+        docker build -t khulnasoft/lazydocker \
         --build-arg BASE_IMAGE_BUILDER=arm64v8/golang \
         --build-arg GOARCH=arm64 \
-        https://github.com/jesseduffield/lazydocker.git
+        https://github.com/khulnasoft/lazydocker.git
         ```
 
     </p></details>
@@ -190,16 +190,16 @@ yay -S lazydocker
     ```sh
     docker run --rm -it -v \
     /var/run/docker.sock:/var/run/docker.sock \
-    -v /yourpath:/.config/jesseduffield/lazydocker \
-    lazyteam/lazydocker
+    -v /yourpath:/.config/khulnasoft/lazydocker \
+    khulnasoft/lazydocker
     ```
 
     - Don't forget to change `/yourpath` to an actual path you created to store lazydocker's config
-    - You can also use this [docker-compose.yml](https://github.com/jesseduffield/lazydocker/blob/master/docker-compose.yml)
+    - You can also use this [docker-compose.yml](https://github.com/khulnasoft/lazydocker/blob/master/docker-compose.yml)
     - You might want to create an alias, for example:
 
         ```sh
-        echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/jesseduffield/lazydocker lazyteam/lazydocker'" >> ~/.zshrc
+        echo "alias lzd='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock -v /yourpath/config:/.config/khulnasoft/lazydocker khulnasoft/lazydocker'" >> ~/.zshrc
         ```
 
 
@@ -207,9 +207,9 @@ yay -S lazydocker
 For development, you can build the image using:
 
 ```sh
-git clone https://github.com/jesseduffield/lazydocker.git
+git clone https://github.com/khulnasoft/lazydocker.git
 cd lazydocker
-docker build -t lazyteam/lazydocker \
+docker build -t khulnasoft/lazydocker \
     --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
     --build-arg VCS_REF=`git rev-parse --short HEAD` \
     --build-arg VERSION=`git describe --abbrev=0 --tag` \
@@ -279,7 +279,7 @@ In the future I want to make this the default, but for now there are some CPU is
 
 Because we support mouse events, you will need to hold option while dragging the mouse to indicate you're trying to select text rather than click on something. Alternatively you can disable mouse events via the `gui.ignoreMouseEvents` config value.
 
-Mac Users: See [Issue #190](https://github.com/jesseduffield/lazydocker/issues/190) for other options.
+Mac Users: See [Issue #190](https://github.com/khulnasoft/lazydocker/issues/190) for other options.
 
 ### Why can't I see my container's logs?
 

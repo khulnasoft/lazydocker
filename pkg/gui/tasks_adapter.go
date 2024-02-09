@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
+	"github.com/khulnasoft/lazydocker/pkg/tasks"
 )
 
 func (gui *Gui) QueueTask(f func(ctx context.Context)) error {

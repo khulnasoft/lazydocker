@@ -5,13 +5,13 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/commands"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/gui/panels"
-	"github.com/jesseduffield/lazydocker/pkg/gui/presentation"
-	"github.com/jesseduffield/lazydocker/pkg/gui/types"
-	"github.com/jesseduffield/lazydocker/pkg/tasks"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/commands"
+	"github.com/khulnasoft/lazydocker/pkg/config"
+	"github.com/khulnasoft/lazydocker/pkg/gui/panels"
+	"github.com/khulnasoft/lazydocker/pkg/gui/presentation"
+	"github.com/khulnasoft/lazydocker/pkg/gui/types"
+	"github.com/khulnasoft/lazydocker/pkg/tasks"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/samber/lo"
 )
 

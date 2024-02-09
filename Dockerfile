@@ -39,9 +39,9 @@ LABEL \
     org.opencontainers.image.created=$BUILD_DATE \
     org.opencontainers.image.version=$VERSION \
     org.opencontainers.image.revision=$VCS_REF \
-    org.opencontainers.image.url="https://github.com/jesseduffield/lazydocker" \
-    org.opencontainers.image.documentation="https://github.com/jesseduffield/lazydocker" \
-    org.opencontainers.image.source="https://github.com/jesseduffield/lazydocker" \
+    org.opencontainers.image.url="https://github.com/khulnasoft/lazydocker" \
+    org.opencontainers.image.documentation="https://github.com/khulnasoft/lazydocker" \
+    org.opencontainers.image.source="https://github.com/khulnasoft/lazydocker" \
     org.opencontainers.image.title="lazydocker" \
     org.opencontainers.image.description="The lazier way to manage everything docker"
 ENTRYPOINT [ "/bin/lazydocker" ]

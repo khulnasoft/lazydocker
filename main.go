@@ -11,9 +11,9 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
-	"github.com/jesseduffield/lazydocker/pkg/app"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/app"
+	"github.com/khulnasoft/lazydocker/pkg/config"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )
@@ -46,7 +46,7 @@ func main() {
 
 	flaggy.SetName("lazydocker")
 	flaggy.SetDescription("The lazier way to manage everything docker")
-	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/jesseduffield/lazydocker"
+	flaggy.DefaultParser.AdditionalHelpPrepend = "https://github.com/khulnasoft/lazydocker"
 
 	flaggy.Bool(&configFlag, "c", "config", "Print the current default config")
 	flaggy.Bool(&debuggingFlag, "d", "debug", "a boolean")

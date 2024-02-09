@@ -1,4 +1,4 @@
-module github.com/jesseduffield/lazydocker
+module github.com/khulnaer 
 
 go 1.20
 
