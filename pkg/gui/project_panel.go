@@ -8,12 +8,12 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/jesseduffield/gocui"
+	"github.com/jesseduffield/yaml"
 	"github.com/khulnasoft/lazydocker/pkg/commands"
 	"github.com/khulnasoft/lazydocker/pkg/gui/panels"
 	"github.com/khulnasoft/lazydocker/pkg/gui/presentation"
 	"github.com/khulnasoft/lazydocker/pkg/tasks"
 	"github.com/khulnasoft/lazydocker/pkg/utils"
-	"github.com/jesseduffield/yaml"
 )
 
 // Although at the moment we'll only have one project, in future we could have
