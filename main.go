@@ -11,10 +11,10 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/go-errors/errors"
 	"github.com/integrii/flaggy"
+	"github.com/jesseduffield/yaml"
 	"github.com/khulnasoft/lazydocker/pkg/app"
 	"github.com/khulnasoft/lazydocker/pkg/config"
 	"github.com/khulnasoft/lazydocker/pkg/utils"
-	"github.com/jesseduffield/yaml"
 	"github.com/samber/lo"
 )
 
