@@ -1,6 +1,7 @@
 # see https://github.com/JamesIves/github-sponsors-readme-action
 name: Generate Sponsors README
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
