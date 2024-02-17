@@ -10,7 +10,6 @@ import (
 func TestDockerComposeCommandNoFiles(t *testing.T) {
 	composeFiles := []string{}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -25,7 +24,6 @@ func TestDockerComposeCommandNoFiles(t *testing.T) {
 func TestDockerComposeCommandSingleFile(t *testing.T) {
 	composeFiles := []string{"one.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -40,7 +38,6 @@ func TestDockerComposeCommandSingleFile(t *testing.T) {
 func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 	composeFiles := []string{"one.yml", "two.yml", "three.yml"}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, composeFiles, "projectDir")
-
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
@@ -53,16 +50,17 @@ func TestDockerComposeCommandMultipleFiles(t *testing.T) {
 }
 
 func TestWritingToConfigFile(t *testing.T) {
-	//init the AppConfig
+	// init the AppConfig
 	emptyComposeFiles := []string{}
 	conf, err := NewAppConfig("name", "version", "commit", "date", "buildSource", false, emptyComposeFiles, "projectDir")
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 
-	testFn := func(ac *AppConfig, newReportingValue string, t *testing.T) {
+	testFn := func(t *testing.T, ac *AppConfig, newValue bool) {
+		t.Helper()
 		updateFn := func(uc *UserConfig) error {
-			uc.Reporting = newReportingValue
+			uc.ConfirmOnQuit = newValue
 			return nil
 		}
 
@@ -71,7 +69,7 @@ func TestWritingToConfigFile(t *testing.T) {
 			t.Fatalf("Unexpected error: %s", err)
 		}
 
-		file, err := os.OpenFile(ac.ConfigFilename(), os.O_RDONLY, 0660)
+		file, err := os.OpenFile(ac.ConfigFilename(), os.O_RDONLY, 0o660)
 		if err != nil {
 			t.Fatalf("Unexpected error: %s", err)
 		}
@@ -87,14 +85,14 @@ func TestWritingToConfigFile(t *testing.T) {
 			t.Fatalf("Unexpected error: %s", err)
 		}
 
-		if sampleUC.Reporting != newReportingValue {
-			t.Fatalf("Got %s, Expected %s\n", sampleUC.Reporting, newReportingValue)
+		if sampleUC.ConfirmOnQuit != newValue {
+			t.Fatalf("Got %v, Expected %v\n", sampleUC.ConfirmOnQuit, newValue)
 		}
 	}
 
 	// insert value into an empty file
-	testFn(conf, "on", t)
+	testFn(t, conf, true)
 
-	// modifying an existing file that already has 'Reporting'
-	testFn(conf, "off", t)
+	// modifying an existing file that already has 'ConfirmOnQuit'
+	testFn(t, conf, false)
 }

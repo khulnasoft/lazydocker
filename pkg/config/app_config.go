@@ -13,14 +13,13 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/OpenPeeDeeP/xdg"
-	yaml "github.com/jesseduffield/yaml"
+	"github.com/jesseduffield/yaml"
 )
 
 // UserConfig holds all of the user-configurable options
@@ -29,15 +28,12 @@ type UserConfig struct {
 	// hide things
 	Gui GuiConfig `yaml:"gui,omitempty"`
 
-	// Reporting determines whether events are reported such as errors (and maybe
-	// application opens but I'm not decided on that yet because it sounds kinda
-	// creepy but I also would love to know how many people are using this
-	// program)
-	Reporting string `yaml:"reporting,omitempty"`
-
 	// ConfirmOnQuit when enabled prompts you to confirm you want to quit when you
 	// hit esc or q when no confirmation panels are open
 	ConfirmOnQuit bool `yaml:"confirmOnQuit,omitempty"`
+
+	// Logs determines how we render/filter a container's logs
+	Logs LogsConfig `yaml:"logs,omitempty"`
 
 	// CommandTemplates determines what commands actually get called when we run
 	// certain commands
@@ -57,18 +53,24 @@ type UserConfig struct {
 	// OS determines what defaults are set for opening files and links
 	OS OSConfig `yaml:"oS,omitempty"`
 
-	// UpdateConfig determines what the default settings are for updating the ui
-	Update UpdateConfig `yaml:"update,omitempty"`
-
 	// Stats determines how long lazydocker will gather container stats for, and
 	// what stat info to graph
 	Stats StatsConfig `yaml:"stats,omitempty"`
+
+	// Replacements determines how we render an item's info
+	Replacements Replacements `yaml:"replacements,omitempty"`
+
+	// For demo purposes: any list item with one of these strings as a substring
+	// will be filtered out and not displayed.
+	// Not documented because it's subject to change
+	Ignore []string `yaml:"ignore,omitempty"`
 }
 
 // ThemeConfig is for setting the colors of panels and some text.
 type ThemeConfig struct {
 	ActiveBorderColor   []string `yaml:"activeBorderColor,omitempty"`
 	InactiveBorderColor []string `yaml:"inactiveBorderColor,omitempty"`
+	SelectedLineBgColor []string `yaml:"selectedLineBgColor,omitempty"`
 	OptionsTextColor    []string `yaml:"optionsTextColor,omitempty"`
 }
 
@@ -112,6 +114,30 @@ type GuiConfig struct {
 
 	// WrapMainPanel determines whether we use word wrap on the main panel
 	WrapMainPanel bool `yaml:"wrapMainPanel,omitempty"`
+
+	// LegacySortContainers determines if containers should be sorted using legacy approach.
+	// By default, containers are now sorted by status. This setting allows users to
+	// use legacy behaviour instead.
+	LegacySortContainers bool `yaml:"legacySortContainers,omitempty"`
+
+	// If 0.333, then the side panels will be 1/3 of the screen's width
+	SidePanelWidth float64 `yaml:"sidePanelWidth"`
+
+	// Determines whether we show the bottom line (the one containing keybinding
+	// info and the status of the app).
+	ShowBottomLine bool `yaml:"showBottomLine"`
+
+	// When true, increases vertical space used by focused side panel,
+	// creating an accordion effect
+	ExpandFocusedSidePanel bool `yaml:"expandFocusedSidePanel"`
+
+	// ScreenMode allow user to specify which screen mode will be used on startup
+	ScreenMode string `yaml:"screenMode,omitempty"`
+
+	// Determines the style of the container status and container health display in the
+	// containers panel. "long": full words (default), "short": one or two characters,
+	// "icon": unicode emoji.
+	ContainerStatusHealthStyle string `yaml:"containerStatusHealthStyle"`
 }
 
 // CommandTemplatesConfig determines what commands actually get called when we
@@ -121,6 +147,20 @@ type CommandTemplatesConfig struct {
 	// .Service.Name }} works but I prefer docker-compose up --force-recreate {{
 	// .Service.Name }}
 	RestartService string `yaml:"restartService,omitempty"`
+
+	// StartService is just like the above but for starting
+	StartService string `yaml:"startService,omitempty"`
+
+	// UpService ups the service (creates and starts)
+	UpService string `yaml:"upService,omitempty"`
+
+	// Runs "docker-compose up -d"
+	Up string `yaml:"up,omitempty"`
+
+	// downs everything
+	Down string `yaml:"down,omitempty"`
+	// downs and removes volumes
+	DownWithVolumes string `yaml:"downWithVolumes,omitempty"`
 
 	// DockerCompose is for your docker-compose command. You may want to combine a
 	// few different docker-compose.yml files together, in which case you can set
@@ -156,21 +196,11 @@ type CommandTemplatesConfig struct {
 	// and ensure they're running before trying to run the service at hand
 	RecreateService string `yaml:"recreateService,omitempty"`
 
-	// ViewContainerLogs is like ViewServiceLogs but for containers
-	ViewContainerLogs string `yaml:"viewContainerLogs,omitempty"`
-
-	// ContainerLogs shows the logs of a container. By default this restricts the
-	// output to (as of right now) the last hour. This is for the sake of
-	// performance, and you can feel free to change this
-	ContainerLogs string `yaml:"containerLogs,omitempty"`
-
 	// AllLogs is for showing what you get from doing `docker-compose logs`. It
 	// combines all the logs together
 	AllLogs string `yaml:"allLogs,omitempty"`
 
-	// ViewAllLogs is to AllLogs what ViewContainerLogs is to ContainerLogs. It's
-	// just the command we use when you want to see all logs in a subprocess with
-	// no filtering
+	// ViewAllLogs is the command we use when you want to see all logs in a subprocess with no filtering
 	ViewAllLogs string `yaml:"viewAlLogs,omitempty"`
 
 	// DockerComposeConfig is the command for viewing the config of your docker
@@ -195,14 +225,6 @@ type OSConfig struct {
 
 	// OpenCommand is the command for opening a link
 	OpenLinkCommand string `yaml:"openLinkCommand,omitempty"`
-}
-
-// UpdateConfig determines what the default settings are for updating the ui
-type UpdateConfig struct {
-	// RefreshProjectTime determines the time betweens updates of all continues docker commands like docker ps, docker images, etc.
-	// It expects a valid duration like: 100ms, 2s, 200ns
-	// for docs see: https://golang.org/pkg/time/#ParseDuration
-	DockerRefreshInterval time.Duration `yaml:"dockerRefreshInterval,omitempty"`
 }
 
 // GraphConfig specifies how to make a graph of recorded container stats
@@ -272,6 +294,15 @@ type CustomCommands struct {
 
 	// Volumes contains the custom commands for volumes
 	Volumes []CustomCommand `yaml:"volumes,omitempty"`
+
+	// Networks contains the custom commands for networks
+	Networks []CustomCommand `yaml:"networks,omitempty"`
+}
+
+// Replacements contains the stuff relating to rendering a container's info
+type Replacements struct {
+	// ImageNamePrefixes tells us how to replace a prefix in the Docker image name
+	ImageNamePrefixes map[string]string `yaml:"imageNamePrefixes,omitempty"`
 }
 
 // CustomCommand is a template for a command we want to run against a service or
@@ -286,6 +317,10 @@ type CustomCommand struct {
 	// option where the output plays in the main panel.
 	Attach bool `yaml:"attach"`
 
+	// Shell indicates whether to invoke the Command on a shell or not.
+	// Example of a bash invoked command: `/bin/bash -c "{Command}".
+	Shell bool `yaml:"shell"`
+
 	// Command is the command we want to run. We can use the go templates here as
 	// well. One example might be `{{ .DockerCompose }} exec {{ .Service.Name }}
 	// /bin/sh`
@@ -299,6 +334,12 @@ type CustomCommand struct {
 
 	// InternalFunction is the name of a function inside lazydocker that we want to run, as opposed to a command-line command. This is only used internally and can't be configured by the user
 	InternalFunction func() error `yaml:"-"`
+}
+
+type LogsConfig struct {
+	Timestamps bool   `yaml:"timestamps,omitempty"`
+	Since      string `yaml:"since,omitempty"`
+	Tail       string `yaml:"tail,omitempty"`
 }
 
 // GetDefaultConfig returns the application default configuration NOTE (to
@@ -320,17 +361,33 @@ func GetDefaultConfig() UserConfig {
 			Theme: ThemeConfig{
 				ActiveBorderColor:   []string{"green", "bold"},
 				InactiveBorderColor: []string{"default"},
+				SelectedLineBgColor: []string{"blue"},
 				OptionsTextColor:    []string{"blue"},
 			},
-			ShowAllContainers: false,
-			ReturnImmediately: false,
-			WrapMainPanel:     false,
+			ShowAllContainers:          false,
+			ReturnImmediately:          false,
+			WrapMainPanel:              true,
+			LegacySortContainers:       false,
+			SidePanelWidth:             0.3333,
+			ShowBottomLine:             true,
+			ExpandFocusedSidePanel:     false,
+			ScreenMode:                 "normal",
+			ContainerStatusHealthStyle: "long",
 		},
-		Reporting:     "undetermined",
 		ConfirmOnQuit: false,
+		Logs: LogsConfig{
+			Timestamps: false,
+			Since:      "60m",
+			Tail:       "",
+		},
 		CommandTemplates: CommandTemplatesConfig{
 			DockerCompose:            "docker-compose",
 			RestartService:           "{{ .DockerCompose }} restart {{ .Service.Name }}",
+			StartService:             "{{ .DockerCompose }} start {{ .Service.Name }}",
+			Up:                       "{{ .DockerCompose }} up -d",
+			Down:                     "{{ .DockerCompose }} down",
+			DownWithVolumes:          "{{ .DockerCompose }} down --volumes",
+			UpService:                "{{ .DockerCompose }} up -d {{ .Service.Name }}",
 			RebuildService:           "{{ .DockerCompose }} up -d --build {{ .Service.Name }}",
 			RecreateService:          "{{ .DockerCompose }} up -d --force-recreate {{ .Service.Name }}",
 			StopService:              "{{ .DockerCompose }} stop {{ .Service.Name }}",
@@ -340,21 +397,13 @@ func GetDefaultConfig() UserConfig {
 			ViewAllLogs:              "{{ .DockerCompose }} logs",
 			DockerComposeConfig:      "{{ .DockerCompose }} config",
 			CheckDockerComposeConfig: "{{ .DockerCompose }} config --quiet",
-			ContainerLogs:            "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
-			ViewContainerLogs:        "docker logs --timestamps --follow --since=60m {{ .Container.ID }}",
 			ServiceTop:               "{{ .DockerCompose }} top {{ .Service.Name }}",
 		},
 		CustomCommands: CustomCommands{
-			Containers: []CustomCommand{
-				{
-					Name:    "bash",
-					Command: "docker exec -it {{ .Container.ID }} /bin/sh -c 'eval $(grep ^$(id -un): /etc/passwd | cut -d : -f 7-)'",
-					Attach:  true,
-				},
-			},
-			Services: []CustomCommand{},
-			Images:   []CustomCommand{},
-			Volumes:  []CustomCommand{},
+			Containers: []CustomCommand{},
+			Services:   []CustomCommand{},
+			Images:     []CustomCommand{},
+			Volumes:    []CustomCommand{},
 		},
 		BulkCommands: CustomCommands{
 			Services: []CustomCommand{
@@ -403,9 +452,6 @@ func GetDefaultConfig() UserConfig {
 			Volumes:    []CustomCommand{},
 		},
 		OS: GetPlatformDefaultConfig(),
-		Update: UpdateConfig{
-			DockerRefreshInterval: time.Millisecond * 100,
-		},
 		Stats: StatsConfig{
 			MaxDuration: duration,
 			Graphs: []GraphConfig{
@@ -420,6 +466,9 @@ func GetDefaultConfig() UserConfig {
 					Color:    "green",
 				},
 			},
+		},
+		Replacements: Replacements{
+			ImageNamePrefixes: map[string]string{},
 		},
 	}
 }
@@ -490,7 +539,7 @@ func configDir(projectName string) string {
 func findOrCreateConfigDir(projectName string) (string, error) {
 	folder := configDir(projectName)
 
-	err := os.MkdirAll(folder, 0755)
+	err := os.MkdirAll(folder, 0o755)
 	if err != nil {
 		return "", err
 	}
@@ -519,7 +568,7 @@ func loadUserConfig(configDir string, base *UserConfig) (*UserConfig, error) {
 		}
 	}
 
-	content, err := ioutil.ReadFile(fileName)
+	content, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -545,7 +594,7 @@ func (c *AppConfig) WriteToUserConfig(updateConfig func(*UserConfig) error) erro
 		return err
 	}
 
-	file, err := os.OpenFile(c.ConfigFilename(), os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(c.ConfigFilename(), os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}

@@ -1,19 +1,8 @@
 package commands
 
 import (
-	"encoding/json"
-	"fmt"
 	"math"
-	"reflect"
-	"strconv"
-	"strings"
 	"time"
-
-	"github.com/fatih/color"
-	"github.com/jesseduffield/asciigraph"
-	"github.com/jesseduffield/lazydocker/pkg/config"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
-	"github.com/mcuadros/go-lookup"
 )
 
 // RecordedStats contains both the container stats we've received from docker, and our own derived stats  from those container stats. When configuring a graph, you're basically specifying the path of a value in this struct
@@ -56,10 +45,9 @@ type ContainerStats struct {
 		IoTimeRecursive        []interface{} `json:"io_time_recursive"`
 		SectorsRecursive       []interface{} `json:"sectors_recursive"`
 	} `json:"blkio_stats"`
-	NumProcs     int `json:"num_procs"`
-	StorageStats struct {
-	} `json:"storage_stats"`
-	CPUStats struct {
+	NumProcs     int      `json:"num_procs"`
+	StorageStats struct{} `json:"storage_stats"`
+	CPUStats     struct {
 		CPUUsage struct {
 			TotalUsage        int64   `json:"total_usage"`
 			PercpuUsage       []int64 `json:"percpu_usage"`
@@ -150,9 +138,8 @@ type ContainerStats struct {
 func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 	cpuUsageDelta := s.CPUStats.CPUUsage.TotalUsage - s.PrecpuStats.CPUUsage.TotalUsage
 	cpuTotalUsageDelta := s.CPUStats.SystemCPUUsage - s.PrecpuStats.SystemCPUUsage
-	numberOfCores := len(s.CPUStats.CPUUsage.PercpuUsage)
 
-	value := float64(cpuUsageDelta*100) * float64(numberOfCores) / float64(cpuTotalUsageDelta)
+	value := float64(cpuUsageDelta*100) / float64(cpuTotalUsageDelta)
 	if math.IsNaN(value) {
 		return 0
 	}
@@ -161,7 +148,6 @@ func (s *ContainerStats) CalculateContainerCPUPercentage() float64 {
 
 // CalculateContainerMemoryUsage calculates the memory usage of the container as a percent of total available memory
 func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
-
 	value := float64(s.MemoryStats.Usage*100) / float64(s.MemoryStats.Limit)
 	if math.IsNaN(value) {
 		return 0
@@ -169,129 +155,34 @@ func (s *ContainerStats) CalculateContainerMemoryUsage() float64 {
 	return value
 }
 
-// RenderStats returns a string containing the rendered stats of the container
-func (c *Container) RenderStats(viewWidth int) (string, error) {
+func (c *Container) appendStats(stats *RecordedStats, maxDuration time.Duration) {
+	c.StatsMutex.Lock()
+	defer c.StatsMutex.Unlock()
+
+	c.StatHistory = append(c.StatHistory, stats)
+	c.eraseOldHistory(maxDuration)
+}
+
+// eraseOldHistory removes any history before the user-specified max duration
+func (c *Container) eraseOldHistory(maxDuration time.Duration) {
+	if maxDuration == 0 {
+		return
+	}
+
+	for i, stat := range c.StatHistory {
+		if time.Since(stat.RecordedAt) < maxDuration {
+			c.StatHistory = c.StatHistory[i:]
+			return
+		}
+	}
+}
+
+func (c *Container) GetLastStats() (*RecordedStats, bool) {
+	c.StatsMutex.Lock()
+	defer c.StatsMutex.Unlock()
 	history := c.StatHistory
 	if len(history) == 0 {
-		return "", nil
+		return nil, false
 	}
-	currentStats := history[len(history)-1]
-
-	graphSpecs := c.Config.UserConfig.Stats.Graphs
-	graphs := make([]string, len(graphSpecs))
-	for i, spec := range graphSpecs {
-		graph, err := c.PlotGraph(spec, viewWidth-10)
-		if err != nil {
-			return "", err
-		}
-		graphs[i] = utils.ColoredString(graph, utils.GetColorAttribute(spec.Color))
-	}
-
-	pidsCount := fmt.Sprintf("PIDs: %d", currentStats.ClientStats.PidsStats.Current)
-	dataReceived := fmt.Sprintf("Traffic received: %s", utils.FormatDecimalBytes(currentStats.ClientStats.Networks.Eth0.RxBytes))
-	dataSent := fmt.Sprintf("Traffic sent: %s", utils.FormatDecimalBytes(currentStats.ClientStats.Networks.Eth0.TxBytes))
-
-	originalJSON, err := json.MarshalIndent(currentStats, "", "  ")
-	if err != nil {
-		return "", err
-	}
-
-	contents := fmt.Sprintf("\n\n%s\n\n%s\n\n%s\n%s\n\n%s",
-		utils.ColoredString(strings.Join(graphs, "\n\n"), color.FgGreen),
-		pidsCount,
-		dataReceived,
-		dataSent,
-		string(originalJSON),
-	)
-
-	return contents, nil
-}
-
-// PlotGraph returns the plotted graph based on the graph spec and the stat history
-func (c *Container) PlotGraph(spec config.GraphConfig, width int) (string, error) {
-	data := make([]float64, len(c.StatHistory))
-
-	max := spec.Max
-	min := spec.Min
-	for i, stats := range c.StatHistory {
-		value, err := lookup.LookupString(stats, spec.StatPath)
-		if err != nil {
-			return "Could not find key: " + spec.StatPath, nil
-		}
-		floatValue, err := getFloat(value.Interface())
-		if err != nil {
-			return "", err
-		}
-		if spec.MinType == "" {
-			if i == 0 {
-				min = floatValue
-			} else if floatValue < min {
-				min = floatValue
-			}
-		}
-
-		if spec.MaxType == "" {
-			if i == 0 {
-				max = floatValue
-			} else if floatValue > max {
-				max = floatValue
-			}
-		}
-
-		data[i] = floatValue
-	}
-
-	height := 10
-	if spec.Height > 0 {
-		height = spec.Height
-	}
-
-	return asciigraph.Plot(
-		data,
-		asciigraph.Height(height),
-		asciigraph.Width(width),
-		asciigraph.Min(min),
-		asciigraph.Max(max),
-		asciigraph.Caption(fmt.Sprintf("%s: %0.2f (%v)", spec.Caption, data[len(data)-1], time.Since(c.StatHistory[0].RecordedAt).Round(time.Second))),
-	), nil
-}
-
-// from Dave C's answer at https://stackoverflow.com/questions/20767724/converting-unknown-interface-to-float64-in-golang
-func getFloat(unk interface{}) (float64, error) {
-	floatType := reflect.TypeOf(float64(0))
-	stringType := reflect.TypeOf("")
-
-	switch i := unk.(type) {
-	case float64:
-		return i, nil
-	case float32:
-		return float64(i), nil
-	case int64:
-		return float64(i), nil
-	case int32:
-		return float64(i), nil
-	case int:
-		return float64(i), nil
-	case uint64:
-		return float64(i), nil
-	case uint32:
-		return float64(i), nil
-	case uint:
-		return float64(i), nil
-	case string:
-		return strconv.ParseFloat(i, 64)
-	default:
-		v := reflect.ValueOf(unk)
-		v = reflect.Indirect(v)
-		if v.Type().ConvertibleTo(floatType) {
-			fv := v.Convert(floatType)
-			return fv.Float(), nil
-		} else if v.Type().ConvertibleTo(stringType) {
-			sv := v.Convert(stringType)
-			s := sv.String()
-			return strconv.ParseFloat(s, 64)
-		} else {
-			return math.NaN(), fmt.Errorf("Can't convert %v to float64", v.Type())
-		}
-	}
+	return history[len(history)-1], true
 }

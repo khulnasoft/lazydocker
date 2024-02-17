@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/jesseduffield/gocui"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 )
 
 type appStatus struct {
@@ -73,7 +73,7 @@ func (gui *Gui) WithWaitingStatus(name string, f func() error) error {
 
 		if err := f(); err != nil {
 			gui.g.Update(func(g *gocui.Gui) error {
-				return gui.createErrorPanel(gui.g, err.Error())
+				return gui.createErrorPanel(err.Error())
 			})
 		}
 	}()

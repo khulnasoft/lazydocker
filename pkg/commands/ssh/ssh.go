@@ -4,18 +4,23 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/url"
 	"os"
 	"os/exec"
 	"path"
-	"syscall"
 	"time"
 )
 
-type dependencies struct {
-	// storing all these dependencies as fields for the sake of testing
+// we only need these two methods from our OSCommand struct, for killing commands
+type CmdKiller interface {
+	Kill(cmd *exec.Cmd) error
+	PrepareForChildren(cmd *exec.Cmd)
+}
+
+type SSHHandler struct {
+	oSCommand CmdKiller
+
 	dialContext func(ctx context.Context, network, addr string) (io.Closer, error)
 	startCmd    func(*exec.Cmd) error
 	tempDir     func(dir string, pattern string) (name string, err error)
@@ -23,21 +28,17 @@ type dependencies struct {
 	setenv      func(key, value string) error
 }
 
-type SSHHandler struct {
-	deps dependencies
-}
-
-func NewSSHHandler() *SSHHandler {
+func NewSSHHandler(oSCommand CmdKiller) *SSHHandler {
 	return &SSHHandler{
-		deps: dependencies{
-			dialContext: func(ctx context.Context, network, addr string) (io.Closer, error) {
-				return (&net.Dialer{}).DialContext(ctx, network, addr)
-			},
-			startCmd: func(cmd *exec.Cmd) error { return cmd.Start() },
-			tempDir:  ioutil.TempDir,
-			getenv:   os.Getenv,
-			setenv:   os.Setenv,
+		oSCommand: oSCommand,
+
+		dialContext: func(ctx context.Context, network, addr string) (io.Closer, error) {
+			return (&net.Dialer{}).DialContext(ctx, network, addr)
 		},
+		startCmd: func(cmd *exec.Cmd) error { return cmd.Start() },
+		tempDir:  os.MkdirTemp,
+		getenv:   os.Getenv,
+		setenv:   os.Setenv,
 	}
 }
 
@@ -46,7 +47,7 @@ func NewSSHHandler() *SSHHandler {
 func (self *SSHHandler) HandleSSHDockerHost() (io.Closer, error) {
 	const key = "DOCKER_HOST"
 	ctx := context.Background()
-	u, err := url.Parse(self.deps.getenv(key))
+	u, err := url.Parse(self.getenv(key))
 	if err != nil {
 		// if no or an invalid docker host is specified, continue nominally
 		return noopCloser{}, nil
@@ -58,7 +59,7 @@ func (self *SSHHandler) HandleSSHDockerHost() (io.Closer, error) {
 		if err != nil {
 			return noopCloser{}, fmt.Errorf("tunnel ssh docker host: %w", err)
 		}
-		err = self.deps.setenv(key, tunnel.socketPath)
+		err = self.setenv(key, tunnel.socketPath)
 		if err != nil {
 			return noopCloser{}, fmt.Errorf("override DOCKER_HOST to tunneled socket: %w", err)
 		}
@@ -75,16 +76,17 @@ func (noopCloser) Close() error { return nil }
 type tunneledDockerHost struct {
 	socketPath string
 	cmd        *exec.Cmd
+	oSCommand  CmdKiller
 }
 
 var _ io.Closer = (*tunneledDockerHost)(nil)
 
 func (t *tunneledDockerHost) Close() error {
-	return syscall.Kill(-t.cmd.Process.Pid, syscall.SIGKILL)
+	return t.oSCommand.Kill(t.cmd)
 }
 
 func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost string) (*tunneledDockerHost, error) {
-	socketDir, err := self.deps.tempDir("/tmp", "lazydocker-sshtunnel-")
+	socketDir, err := self.tempDir("/tmp", "lazydocker-sshtunnel-")
 	if err != nil {
 		return nil, fmt.Errorf("create ssh tunnel tmp file: %w", err)
 	}
@@ -111,6 +113,7 @@ func (self *SSHHandler) createDockerHostTunnel(ctx context.Context, remoteHost s
 	return &tunneledDockerHost{
 		socketPath: newDockerHostURL.String(),
 		cmd:        cmd,
+		oSCommand:  self.oSCommand,
 	}, nil
 }
 
@@ -137,7 +140,7 @@ func (self *SSHHandler) retrySocketDial(ctx context.Context, socketPath string) 
 
 // Try to dial the specified unix socket, immediately close the connection if successfully created.
 func (self *SSHHandler) tryDial(ctx context.Context, socketPath string) error {
-	conn, err := self.deps.dialContext(ctx, "unix", socketPath)
+	conn, err := self.dialContext(ctx, "unix", socketPath)
 	if err != nil {
 		return err
 	}
@@ -147,8 +150,8 @@ func (self *SSHHandler) tryDial(ctx context.Context, socketPath string) error {
 
 func (self *SSHHandler) tunnelSSH(ctx context.Context, host, localSocket string) (*exec.Cmd, error) {
 	cmd := exec.CommandContext(ctx, "ssh", "-L", localSocket+":/var/run/docker.sock", host, "-N")
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	err := self.deps.startCmd(cmd)
+	self.oSCommand.PrepareForChildren(cmd)
+	err := self.startCmd(cmd)
 	if err != nil {
 		return nil, err
 	}

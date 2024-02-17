@@ -2,11 +2,11 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
 	"math"
-	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -14,8 +14,14 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/jesseduffield/gocui"
+	"github.com/mattn/go-runewidth"
+
+	// "github.com/jesseduffield/yaml"
 
 	"github.com/fatih/color"
+	"github.com/goccy/go-yaml"
+	"github.com/goccy/go-yaml/lexer"
+	"github.com/goccy/go-yaml/printer"
 )
 
 // SplitLines takes a multiline string and splits it on newlines
@@ -36,10 +42,10 @@ func SplitLines(multilineString string) []string {
 // WithPadding pads a string as much as you want
 func WithPadding(str string, padding int) string {
 	uncoloredStr := Decolorise(str)
-	if padding < len(uncoloredStr) {
+	if padding < runewidth.StringWidth(uncoloredStr) {
 		return str
 	}
-	return str + strings.Repeat(" ", padding-len(uncoloredStr))
+	return str + strings.Repeat(" ", padding-runewidth.StringWidth(uncoloredStr))
 }
 
 // ColoredString takes a string and a colour attribute and returns a colored
@@ -51,6 +57,45 @@ func ColoredString(str string, colorAttribute color.Attribute) string {
 	}
 	colour := color.New(colorAttribute)
 	return ColoredStringDirect(str, colour)
+}
+
+// ColoredYamlString takes an YAML formatted string and returns a colored string
+// with colors hardcoded as:
+// keys: cyan
+// Booleans: magenta
+// Numbers: yellow
+// Strings: green
+func ColoredYamlString(str string) string {
+	format := func(attr color.Attribute) string {
+		return fmt.Sprintf("%s[%dm", "\x1b", attr)
+	}
+	tokens := lexer.Tokenize(str)
+	var p printer.Printer
+	p.Bool = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgMagenta),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.Number = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgYellow),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.MapKey = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgCyan),
+			Suffix: format(color.Reset),
+		}
+	}
+	p.String = func() *printer.Property {
+		return &printer.Property{
+			Prefix: format(color.FgGreen),
+			Suffix: format(color.Reset),
+		}
+	}
+	return p.PrintTokens(tokens)
 }
 
 // MultiColoredString takes a string and an array of colour attributes and returns a colored
@@ -98,117 +143,53 @@ func Max(x, y int) int {
 	return y
 }
 
-type Displayable interface {
-	GetDisplayStrings(bool) []string
-}
-
-type RenderListConfig struct {
-	IsFocused bool
-	Header    []string
-}
-
-func IsFocused(isFocused bool) func(c *RenderListConfig) {
-	return func(c *RenderListConfig) {
-		c.IsFocused = isFocused
-	}
-}
-
-func WithHeader(header []string) func(c *RenderListConfig) {
-	return func(c *RenderListConfig) {
-		c.Header = header
-	}
-}
-
-// RenderList takes a slice of items, confirms they implement the Displayable
-// interface, then generates a list of their displaystrings to write to a panel's
-// buffer
-func RenderList(slice interface{}, options ...func(*RenderListConfig)) (string, error) {
-	config := &RenderListConfig{}
-	for _, option := range options {
-		option(config)
-	}
-
-	s := reflect.ValueOf(slice)
-	if s.Kind() != reflect.Slice {
-		return "", errors.New("RenderList given a non-slice type")
-	}
-
-	displayables := make([]Displayable, s.Len())
-
-	for i := 0; i < s.Len(); i++ {
-		value, ok := s.Index(i).Interface().(Displayable)
-		if !ok {
-			return "", errors.New("item does not implement the Displayable interface")
-		}
-		displayables[i] = value
-	}
-
-	return renderDisplayableList(displayables, *config)
-}
-
-// renderDisplayableList takes a list of displayable items, obtains their display
-// strings via GetDisplayStrings() and then returns a single string containing
-// each item's string representation on its own line, with appropriate horizontal
-// padding between the item's own strings
-func renderDisplayableList(items []Displayable, config RenderListConfig) (string, error) {
-	if len(items) == 0 {
+// RenderTable takes an array of string arrays and returns a table containing the values
+func RenderTable(rows [][]string) (string, error) {
+	if len(rows) == 0 {
 		return "", nil
 	}
-
-	stringArrays := getDisplayStringArrays(items, config.IsFocused)
-	if len(config.Header) > 0 {
-		stringArrays = append([][]string{config.Header}, stringArrays...)
-	}
-
-	return RenderTable(stringArrays)
-}
-
-// RenderTable takes an array of string arrays and returns a table containing the values
-func RenderTable(stringArrays [][]string) (string, error) {
-	if !displayArraysAligned(stringArrays) {
+	if !displayArraysAligned(rows) {
 		return "", errors.New("Each item must return the same number of strings to display")
 	}
 
-	padWidths := getPadWidths(stringArrays)
-	paddedDisplayStrings := getPaddedDisplayStrings(stringArrays, padWidths)
+	columnPadWidths := getPadWidths(rows)
+	paddedDisplayRows := getPaddedDisplayStrings(rows, columnPadWidths)
 
-	return strings.Join(paddedDisplayStrings, "\n"), nil
+	return strings.Join(paddedDisplayRows, "\n"), nil
 }
 
 // Decolorise strips a string of color
 func Decolorise(str string) string {
-	re := regexp.MustCompile(`\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]`)
+	re := regexp.MustCompile(`\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[mK]`)
 	return re.ReplaceAllString(str, "")
 }
 
-func getPadWidths(stringArrays [][]string) []int {
-	if len(stringArrays[0]) <= 1 {
+func getPadWidths(rows [][]string) []int {
+	if len(rows[0]) <= 1 {
 		return []int{}
 	}
-	padWidths := make([]int, len(stringArrays[0])-1)
-	for i := range padWidths {
-		for _, strings := range stringArrays {
-			uncoloredString := Decolorise(strings[i])
-			if len(uncoloredString) > padWidths[i] {
-				padWidths[i] = len(uncoloredString)
+	columnPadWidths := make([]int, len(rows[0])-1)
+	for i := range columnPadWidths {
+		for _, cells := range rows {
+			uncoloredCell := Decolorise(cells[i])
+
+			if runewidth.StringWidth(uncoloredCell) > columnPadWidths[i] {
+				columnPadWidths[i] = runewidth.StringWidth(uncoloredCell)
 			}
 		}
 	}
-	return padWidths
+	return columnPadWidths
 }
 
-func getPaddedDisplayStrings(stringArrays [][]string, padWidths []int) []string {
-	paddedDisplayStrings := make([]string, len(stringArrays))
-	for i, stringArray := range stringArrays {
-		if len(stringArray) == 0 {
-			continue
+func getPaddedDisplayStrings(rows [][]string, columnPadWidths []int) []string {
+	paddedDisplayRows := make([]string, len(rows))
+	for i, cells := range rows {
+		for j, columnPadWidth := range columnPadWidths {
+			paddedDisplayRows[i] += WithPadding(cells[j], columnPadWidth) + " "
 		}
-		for j, padWidth := range padWidths {
-			paddedDisplayStrings[i] += WithPadding(stringArray[j], padWidth) + " "
-		}
-		paddedDisplayStrings[i] += stringArray[len(padWidths)]
+		paddedDisplayRows[i] += cells[len(columnPadWidths)]
 	}
-	return paddedDisplayStrings
+	return paddedDisplayRows
 }
 
 // displayArraysAligned returns true if every string array returned from our
@@ -220,14 +201,6 @@ func displayArraysAligned(stringArrays [][]string) bool {
 		}
 	}
 	return true
-}
-
-func getDisplayStringArrays(displayables []Displayable, isFocused bool) [][]string {
-	stringArrays := make([][]string, len(displayables))
-	for i, item := range displayables {
-		stringArrays[i] = item.GetDisplayStrings(isFocused)
-	}
-	return stringArrays
 }
 
 func FormatBinaryBytes(b int) string {
@@ -266,7 +239,7 @@ func FormatDecimalBytes(b int) string {
 
 func ApplyTemplate(str string, object interface{}) string {
 	var buf bytes.Buffer
-	template.Must(template.New("").Parse(str)).Execute(&buf, object)
+	_ = template.Must(template.New("").Parse(str)).Execute(&buf, object)
 	return buf.String()
 }
 
@@ -290,7 +263,7 @@ func GetGocuiAttribute(key string) gocui.Attribute {
 	if present {
 		return value
 	}
-	return gocui.ColorWhite
+	return gocui.ColorDefault
 }
 
 // GetColorAttribute gets the color attribute from the string
@@ -371,5 +344,69 @@ func CloseMany(closers []io.Closer) error {
 			errs = append(errs, err)
 		}
 	}
-	return multiErr(errs)
+	if len(errs) > 0 {
+		return multiErr(errs)
+	}
+	return nil
+}
+
+func SafeTruncate(str string, limit int) string {
+	if len(str) > limit {
+		return str[0:limit]
+	} else {
+		return str
+	}
+}
+
+func IsValidHexValue(v string) bool {
+	if len(v) != 4 && len(v) != 7 {
+		return false
+	}
+
+	if v[0] != '#' {
+		return false
+	}
+
+	for _, char := range v[1:] {
+		switch char {
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'A', 'B', 'C', 'D', 'E', 'F':
+			continue
+		default:
+			return false
+		}
+	}
+
+	return true
+}
+
+// Style used on menu items that open another menu
+func OpensMenuStyle(str string) string {
+	return ColoredString(fmt.Sprintf("%s...", str), color.FgMagenta)
+}
+
+// MarshalIntoYaml gets any json-tagged data and marshal it into yaml saving original json structure.
+// Useful for structs from 3rd-party libs without yaml tags.
+func MarshalIntoYaml(data interface{}) ([]byte, error) {
+	return marshalIntoFormat(data, "yaml")
+}
+
+func marshalIntoFormat(data interface{}, format string) ([]byte, error) {
+	// First marshal struct->json to get the resulting structure declared by json tags
+	dataJSON, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	switch format {
+	case "json":
+		return dataJSON, err
+	case "yaml":
+		// Use Unmarshal->Marshal hack to convert json into yaml with the original structure preserved
+		var dataMirror yaml.MapSlice
+		if err := yaml.Unmarshal(dataJSON, &dataMirror); err != nil {
+			return nil, err
+		}
+		return yaml.Marshal(dataMirror)
+	default:
+		return nil, errors.New(fmt.Sprintf("Unsupported detailization format: %s", format))
+	}
 }

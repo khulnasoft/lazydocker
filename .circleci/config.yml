@@ -43,11 +43,11 @@ jobs:
   # matrix build jobs run on every commit
   # building on versioned Go and the latest one
   # '<<: *' syntax is a YAML thing for including documents
-  "golang:1.12":
+  "golang:1.17":
     <<: *env-shared
     <<: *build-shared
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.17
   "golang:latest":
     <<: *env-shared
     <<: *build-shared
@@ -57,23 +57,9 @@ jobs:
   release:
     <<: *env-shared
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.17
     steps:
       - checkout
-      #- run:
-      #    name: Install snapcraft
-      #    command: |
-      #      ./.circleci/install_snapcraft.sh
-      #- run:
-      #    name: Login to snapcraft
-      #    # if you ever lose this, you can recreate it via
-      #    # `snapcraft export-login snapcraft.login && base64 snapcraft.login` and then chuck that
-      #    # in circle ci as the SNAPCRAFT_LOGIN_FILE env variable
-      #    # You'll need your ubuntu one password
-      #    command: |
-      #      echo $SNAPCRAFT_LOGIN_FILE | base64 --decode --ignore-garbage > snapcraft.login
-      #      snapcraft login --with snapcraft.login
-      #      rm snapcraft.login
       - run:
           name: Run gorelease
           command: |
@@ -88,7 +74,7 @@ workflows:
   build:
     jobs:
       # build matrix
-      - "golang:1.12"
+      - "golang:1.17"
       - "golang:latest"
   release:
     jobs:

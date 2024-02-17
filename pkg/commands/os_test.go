@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"io/ioutil"
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
@@ -89,7 +89,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "nano", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "VISUAL" {
@@ -111,7 +111,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "emacs", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				if env == "EDITOR" {
@@ -133,7 +133,7 @@ func TestOSCommandEditFile(t *testing.T) {
 
 				assert.EqualValues(t, "vi", name)
 
-				return nil
+				return exec.Command("exit", "0")
 			},
 			func(env string) string {
 				return ""
@@ -153,13 +153,14 @@ func TestOSCommandEditFile(t *testing.T) {
 	}
 }
 
-// TestOSCommandQuote is a function.
 func TestOSCommandQuote(t *testing.T) {
 	osCommand := NewDummyOSCommand()
 
+	osCommand.Platform.os = "linux"
+
 	actual := osCommand.Quote("hello `test`")
 
-	expected := osCommand.Platform.escapedQuote + "hello \\`test\\`" + osCommand.Platform.escapedQuote
+	expected := "\"hello \\`test\\`\""
 
 	assert.EqualValues(t, expected, actual)
 }
@@ -172,7 +173,7 @@ func TestOSCommandQuoteSingleQuote(t *testing.T) {
 
 	actual := osCommand.Quote("hello 'test'")
 
-	expected := osCommand.Platform.fallbackEscapedQuote + "hello 'test'" + osCommand.Platform.fallbackEscapedQuote
+	expected := `"hello 'test'"`
 
 	assert.EqualValues(t, expected, actual)
 }
@@ -185,7 +186,20 @@ func TestOSCommandQuoteDoubleQuote(t *testing.T) {
 
 	actual := osCommand.Quote(`hello "test"`)
 
-	expected := osCommand.Platform.escapedQuote + "hello \"test\"" + osCommand.Platform.escapedQuote
+	expected := `"hello \"test\""`
+
+	assert.EqualValues(t, expected, actual)
+}
+
+// TestOSCommandQuoteWindows tests the quote function for Windows
+func TestOSCommandQuoteWindows(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+
+	osCommand.Platform.os = "windows"
+
+	actual := osCommand.Quote(`hello "test" 'test2'`)
+
+	expected := `\"hello "'"'"test"'"'" 'test2'\"`
 
 	assert.EqualValues(t, expected, actual)
 }
@@ -235,7 +249,7 @@ func TestOSCommandFileType(t *testing.T) {
 		{
 			"testDirectory",
 			func() {
-				if err := os.Mkdir("testDirectory", 0644); err != nil {
+				if err := os.Mkdir("testDirectory", 0o644); err != nil {
 					panic(err)
 				}
 			},
@@ -275,7 +289,7 @@ func TestOSCommandCreateTempFile(t *testing.T) {
 			func(path string, err error) {
 				assert.NoError(t, err)
 
-				content, err := ioutil.ReadFile(path)
+				content, err := os.ReadFile(path)
 				assert.NoError(t, err)
 
 				assert.Equal(t, "content", string(content))
@@ -286,6 +300,56 @@ func TestOSCommandCreateTempFile(t *testing.T) {
 	for _, s := range scenarios {
 		t.Run(s.testName, func(t *testing.T) {
 			s.test(NewDummyOSCommand().CreateTempFile(s.filename, s.content))
+		})
+	}
+}
+
+func TestOSCommandExecutableFromStringWithShellLinux(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+
+	osCommand.Platform.os = "linux"
+
+	tests := []struct {
+		name       string
+		commandStr string
+		want       string
+	}{
+		{
+			"success",
+			"pwd",
+			fmt.Sprintf("%v %v %v", osCommand.Platform.shell, osCommand.Platform.shellArg, "\"pwd\""),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := osCommand.NewCommandStringWithShell(tt.commandStr)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestOSCommandNewCommandStringWithShellWindows(t *testing.T) {
+	osCommand := NewDummyOSCommand()
+
+	osCommand.Platform.os = "windows"
+
+	tests := []struct {
+		name       string
+		commandStr string
+		want       string
+	}{
+		{
+			"success",
+			"pwd",
+			fmt.Sprintf("%v %v %v", osCommand.Platform.shell, osCommand.Platform.shellArg, "pwd"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := osCommand.NewCommandStringWithShell(tt.commandStr)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

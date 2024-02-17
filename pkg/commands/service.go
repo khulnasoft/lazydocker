@@ -1,13 +1,11 @@
 package commands
 
 import (
+	"context"
 	"os/exec"
 
-	"github.com/docker/docker/api/types/container"
-
-	"github.com/docker/docker/api/types"
-	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,37 +19,34 @@ type Service struct {
 	DockerCommand LimitedDockerCommand
 }
 
-// GetDisplayStrings returns the dispaly string of Container
-func (s *Service) GetDisplayStrings(isFocused bool) []string {
-
-	if s.Container == nil {
-		return []string{utils.ColoredString("none", color.FgBlue), "", s.Name, ""}
-	}
-
-	cont := s.Container
-	return []string{cont.GetDisplayStatus(), cont.GetDisplaySubstatus(), s.Name, cont.GetDisplayCPUPerc()}
-}
-
 // Remove removes the service's containers
-func (s *Service) Remove(options types.ContainerRemoveOptions) error {
+func (s *Service) Remove(options dockerTypes.ContainerRemoveOptions) error {
 	return s.Container.Remove(options)
 }
 
 // Stop stops the service's containers
 func (s *Service) Stop() error {
-	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.StopService
-	command := utils.ApplyTemplate(
-		templateString,
-		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
-	)
-	return s.OSCommand.RunCommand(command)
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StopService)
+}
+
+// Up up's the service
+func (s *Service) Up() error {
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.UpService)
 }
 
 // Restart restarts the service
 func (s *Service) Restart() error {
-	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.RestartService
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.RestartService)
+}
+
+// Restart starts the service
+func (s *Service) Start() error {
+	return s.runCommand(s.OSCommand.Config.UserConfig.CommandTemplates.StartService)
+}
+
+func (s *Service) runCommand(templateCmdStr string) error {
 	command := utils.ApplyTemplate(
-		templateString,
+		templateCmdStr,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 	return s.OSCommand.RunCommand(command)
@@ -60,11 +55,6 @@ func (s *Service) Restart() error {
 // Attach attaches to the service
 func (s *Service) Attach() (*exec.Cmd, error) {
 	return s.Container.Attach()
-}
-
-// Top returns process information
-func (s *Service) Top() (container.ContainerTopOKBody, error) {
-	return s.Container.Top()
 }
 
 // ViewLogs attaches to a subprocess viewing the service's logs
@@ -82,12 +72,12 @@ func (s *Service) ViewLogs() (*exec.Cmd, error) {
 }
 
 // RenderTop renders the process list of the service
-func (s *Service) RenderTop() (string, error) {
+func (s *Service) RenderTop(ctx context.Context) (string, error) {
 	templateString := s.OSCommand.Config.UserConfig.CommandTemplates.ServiceTop
 	command := utils.ApplyTemplate(
 		templateString,
 		s.DockerCommand.NewCommandObject(CommandObject{Service: s}),
 	)
 
-	return s.OSCommand.RunCommandWithOutput(command)
+	return s.OSCommand.RunCommandWithOutputContext(ctx, command)
 }

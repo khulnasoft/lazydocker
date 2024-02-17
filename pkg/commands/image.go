@@ -2,14 +2,16 @@ package commands
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/image"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
+	"github.com/samber/lo"
+
+	dockerTypes "github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/fatih/color"
-	"github.com/jesseduffield/lazydocker/pkg/utils"
+	"github.com/khulnasoft/lazydocker/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,21 +20,15 @@ type Image struct {
 	Name          string
 	Tag           string
 	ID            string
-	Image         types.ImageSummary
+	Image         dockerTypes.ImageSummary
 	Client        *client.Client
 	OSCommand     *OSCommand
 	Log           *logrus.Entry
 	DockerCommand LimitedDockerCommand
 }
 
-// GetDisplayStrings returns the display string of Image
-func (i *Image) GetDisplayStrings(isFocused bool) []string {
-
-	return []string{i.Name, i.Tag, utils.FormatDecimalBytes(int(i.Image.Size))}
-}
-
 // Remove removes the image
-func (i *Image) Remove(options types.ImageRemoveOptions) error {
+func (i *Image) Remove(options dockerTypes.ImageRemoveOptions) error {
 	if _, err := i.Client.ImageRemove(context.Background(), i.ID, options); err != nil {
 		return err
 	}
@@ -40,19 +36,13 @@ func (i *Image) Remove(options types.ImageRemoveOptions) error {
 	return nil
 }
 
-// Layer is a layer in an image's history
-type Layer struct {
-	image.HistoryResponseItem
-}
-
-// GetDisplayStrings returns the array of strings describing the layer
-func (l *Layer) GetDisplayStrings(isFocused bool) []string {
+func getHistoryResponseItemDisplayStrings(layer image.HistoryResponseItem) []string {
 	tag := ""
-	if len(l.Tags) > 0 {
-		tag = l.Tags[0]
+	if len(layer.Tags) > 0 {
+		tag = layer.Tags[0]
 	}
 
-	id := strings.TrimPrefix(l.ID, "sha256:")
+	id := strings.TrimPrefix(layer.ID, "sha256:")
 	if len(id) > 10 {
 		id = id[0:10]
 	}
@@ -62,16 +52,16 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 	}
 
 	dockerFileCommandPrefix := "/bin/sh -c #(nop) "
-	createdBy := l.CreatedBy
-	if strings.Contains(l.CreatedBy, dockerFileCommandPrefix) {
-		createdBy = strings.Trim(strings.TrimPrefix(l.CreatedBy, dockerFileCommandPrefix), " ")
+	createdBy := layer.CreatedBy
+	if strings.Contains(layer.CreatedBy, dockerFileCommandPrefix) {
+		createdBy = strings.Trim(strings.TrimPrefix(layer.CreatedBy, dockerFileCommandPrefix), " ")
 		split := strings.Split(createdBy, " ")
 		createdBy = utils.ColoredString(split[0], color.FgYellow) + " " + strings.Join(split[1:], " ")
 	}
 
 	createdBy = strings.Replace(createdBy, "\t", " ", -1)
 
-	size := utils.FormatBinaryBytes(int(l.Size))
+	size := utils.FormatBinaryBytes(int(layer.Size))
 	sizeColor := color.FgWhite
 	if size == "0B" {
 		sizeColor = color.FgBlue
@@ -87,23 +77,24 @@ func (l *Layer) GetDisplayStrings(isFocused bool) []string {
 
 // RenderHistory renders the history of the image
 func (i *Image) RenderHistory() (string, error) {
-
 	history, err := i.Client.ImageHistory(context.Background(), i.ID)
 	if err != nil {
 		return "", err
 	}
 
-	layers := make([]*Layer, len(history))
-	for i, layer := range history {
-		layers[i] = &Layer{layer}
-	}
+	tableBody := lo.Map(history, func(layer image.HistoryResponseItem, _ int) []string {
+		return getHistoryResponseItemDisplayStrings(layer)
+	})
 
-	return utils.RenderList(layers, utils.WithHeader([]string{"ID", "TAG", "SIZE", "COMMAND"}))
+	headers := [][]string{{"ID", "TAG", "SIZE", "COMMAND"}}
+	table := append(headers, tableBody...)
+
+	return utils.RenderTable(table)
 }
 
 // RefreshImages returns a slice of docker images
 func (c *DockerCommand) RefreshImages() ([]*Image, error) {
-	images, err := c.Client.ImageList(context.Background(), types.ImageListOptions{})
+	images, err := c.Client.ImageList(context.Background(), dockerTypes.ImageListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +102,6 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 	ownImages := make([]*Image, len(images))
 
 	for i, image := range images {
-		// func (cli *Client) ImageHistory(ctx context.Context, imageID string) ([]image.HistoryResponseItem, error)
-
 		firstTag := ""
 		tags := image.RepoTags
 		if len(tags) > 0 {
@@ -125,6 +114,13 @@ func (c *DockerCommand) RefreshImages() ([]*Image, error) {
 		if len(nameParts) > 1 {
 			tag = nameParts[len(nameParts)-1]
 			name = strings.Join(nameParts[:len(nameParts)-1], ":")
+
+			for prefix, replacement := range c.Config.UserConfig.Replacements.ImageNamePrefixes {
+				if strings.HasPrefix(name, prefix) {
+					name = strings.Replace(name, prefix, replacement, 1)
+					break
+				}
+			}
 		}
 
 		ownImages[i] = &Image{
